@@ -1,7 +1,4 @@
 package com.bits.cmha;
-
-import jdk.dynalink.beans.StaticClass;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +7,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class CMHAndWithSite {
-    //Number of proccesses in the system
-    static int no_proccesses;
+    //Number of processes in the system
+    static int no_processes;
     static int no_sites;
 
     //Deadlock flag - 0 for false, 1 for true
@@ -42,27 +39,27 @@ public class CMHAndWithSite {
     // The main - The program execution starts from here
     public static void main(String[] args) {
 
-        //Proccess ID of the proccess initiating the probe
+        //process ID of the process initiating the probe
         int pid_probe;
 
-        //Enter the number of proccesses in the system
+        //Enter the number of processes in the system
         System.out.println("Enter the number of processes  (Should be greater than 1)");
         Scanner in = new Scanner(System.in);
-        no_proccesses = in.nextInt();
+        no_processes = in.nextInt();
         System.out.println("Enter the number of Sites (Should be greater than 1)");
         no_sites = in.nextInt();
         SortedMap<Integer, List<Integer>>  siteProcess = new TreeMap<>();
         for (int from = 0; from < no_sites; from++)
         {
             System.out.println("Enter the Processes of Site S" + (from+1) +". Enter 999 to go to next site");
-            List<Integer> proccessList = new ArrayList<>();
+            List<Integer> processList = new ArrayList<>();
             while (true){
                 int pnumber = in.nextInt() ;
                 if(pnumber== 999)
                     break;
-                proccessList.add(pnumber-1);
+                processList.add(pnumber-1);
             }
-            siteProcess.put(from,proccessList);
+            siteProcess.put(from,processList);
         }
 
         for (Map.Entry<Integer, List<Integer>> entry : siteProcess.entrySet()){
@@ -71,19 +68,19 @@ public class CMHAndWithSite {
             }
         }
 
-        if (no_proccesses > 1)
+        if (no_processes > 1)
         {
             //Enter the wait-graph. (nxn) matrix.
             System.out.println("Enter the wait for graph");
 
-            Integer[][] wait_for_graph = new Integer[no_proccesses][no_proccesses];
+            Integer[][] wait_for_graph = new Integer[no_processes][no_processes];
 
 
             //Input the wait for graph values
-            for (int from = 0; from < no_proccesses; from++)
+            for (int from = 0; from < no_processes; from++)
             {
 
-                for (int to = 0; to < no_proccesses; to++)
+                for (int to = 0; to < no_processes; to++)
                 {
                     System.out.println("Enter from" + " P" + (from+1) + " ->" + " P"+ (to+1));
                     int temp = in.nextInt();
@@ -91,14 +88,14 @@ public class CMHAndWithSite {
                 }
             }
 
-            boolean[] dependent = new boolean[no_proccesses];
+            boolean[] dependent = new boolean[no_processes];
             System.out.println( "The wait-for graph is : ");
 
             //display wait for graph
             displayGraph(wait_for_graph);
 
-            //Enter the proccess initiating the probe
-            System.out.println("Enter the proccess initiating the probe (Between 1 and number of processors)");
+            //Enter the process initiating the probe
+            System.out.println("Enter the process initiating the probe (Between 1 and number of processes)");
             pid_probe = in.nextInt();
             pid_probe = pid_probe - 1;
 
@@ -107,7 +104,7 @@ public class CMHAndWithSite {
             System.out.println("DIRECTION" + "\t\t" + "PROBE");
 
             //Detecting deadlock
-            for (int col = 0; col < no_proccesses; col++)
+            for (int col = 0; col < no_processes; col++)
             {
                 if (wait_for_graph[pid_probe][col] == 1)
                 {
@@ -116,7 +113,9 @@ public class CMHAndWithSite {
                         System.out.println(" P" +(col+1) + " is in another Site. Sending probe " + pid);
                     }
                     System.out.println( " P" + (pid_probe + 1) + " --> P" + (col + 1) + "     (" + (pid_probe + 1) + "," + (pid_probe + 1) + "," + (col + 1) + ")" );
-                    detectDeadlock(wait_for_graph, pid_probe, col, dependent);
+                    if (!detectDeadlock(wait_for_graph, pid_probe, col, dependent)){
+                        System.out.println("Deadlock is not detected");
+                    }
                 }
             }
         }
@@ -149,9 +148,9 @@ public class CMHAndWithSite {
         }
     }
 
-    static void detectDeadlock(Integer[][] graph, int init, int dest, boolean[] dependent)
+    static boolean detectDeadlock(Integer[][] graph, int init, int dest, boolean[] dependent)
     {
-        int end = no_proccesses;
+        int end = no_processes;
         for (int col = 0; col < end; col++)
         {
             if (graph[dest][col] == 1)
@@ -171,5 +170,6 @@ public class CMHAndWithSite {
                 detectDeadlock(graph, init, col, dependent);
             }
         }
+        return deadlock_flag;
     }
 }
